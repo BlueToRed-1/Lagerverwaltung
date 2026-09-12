@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lagerverwaltung</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f5;
+  color: #1f2937;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.start-screen,
+.auth-screen {
+  min-height: 100vh;
+  background: #173f2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.start-box,
+.auth-box {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: 18px;
+  padding: 40px;
+  box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+}
+
+.start-box {
+  text-align: center;
+}
+
+.start-box h1,
+.auth-box h1 {
+  color: #173f2a;
+  margin-bottom: 10px;
+}
+
+.start-box p,
+.auth-box p {
+  color: #6b7280;
+  margin-bottom: 25px;
+}
+
+.start-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.start-button,
+.auth-main-button,
+.action-button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 9px;
+  background: #286342;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.start-button:hover,
+.auth-main-button:hover,
+.action-button:hover {
+  background: #1f5135;
+}
+
+.start-button.secondary,
+.auth-back-button {
+  background: #e8eee9;
+  color: #173f2a;
+}
+
+.start-button.watch {
+  background: #6b7280;
+}
+
+.auth-box {
+  max-width: 430px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select,
+.auth-box input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+.auth-back-button {
+  width: 100%;
+  margin-top: 10px;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.auth-error {
+  color: #b91c1c;
+  background: #fee2e2;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: none;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: #173f2a;
+  color: white;
+  padding: 25px 15px;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 35px;
+  padding: 0 10px;
+}
+
+.nav button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #dce9df;
+  text-align: left;
+  padding: 13px 12px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.nav button:hover,
+.nav button.active {
+  background: #286342;
+  color: white;
+}
+
+.main {
+  flex: 1;
+  padding: 30px;
+  overflow-x: auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.topbar h1 {
+  font-size: 28px;
+}
+
+.user {
+  background: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.panel {
+  background: white;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 25px;
+}
+
+.panel-header {
+  margin-bottom: 20px;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category:hover {
+  background: #f0f7f2;
+}
+
+.category strong {
+  font-size: 17px;
+}
+
+.category p {
+  margin-top: 5px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.category span {
+  font-size: 28px;
+  color: #286342;
+}
+
+.search-box {
+  margin-bottom: 25px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 14px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.small-button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #286342;
+  color: white;
+}
+
+.back-button {
+  border: none;
+  background: #173f2a;
+  color: white;
+  padding: 11px 17px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.info-box {
+  background: #f4f7f5;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.info-box strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #173f2a;
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 20px;
+}
+
+.role-badge {
+  display: inline-block;
+  margin-top: 5px;
+  background: #e7f1ea;
+  color: #173f2a;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.delete-button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #991b1b;
+  color: white;
+}
+
+.logout-button {
+  background: #991b1b;
+  margin-top: 15px;
+}
+
+@media (max-width: 700px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .nav {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+  }
+
+  .nav button {
+    white-space: nowrap;
+    width: auto;
+  }
+
+  .main {
+    padding: 15px;
+  }
+
+  .topbar h1 {
+    font-size: 22px;
+  }
+
+  .panel {
+    overflow-x: auto;
+  }
+
+  .user-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="startScreen" class="start-screen">
+  <div class="start-box">
+
+    <h1>📦 Lagerverwaltung</h1>
+
+    <p>Was möchtest du machen?</p>
+
+    <div class="start-buttons">
+
+      <button class="start-button" onclick="showAuth('login')">
+        🔐 Anmelden
+      </button>
+
+      <button class="start-button secondary" onclick="showAuth('register')">
+        📝 Registrieren
+      </button>
+
+      <button class="start-button watch" onclick="watchAsGuest()">
+        👀 Zuschauen
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<div id="authScreen" class="auth-screen hidden">
+
+  <div class="auth-box">
+
+    <h1 id="authTitle">🔐 Anmelden</h1>
+
+    <p id="authDescription">
+      Gib deinen Benutzernamen und dein Passwort ein.
+    </p>
+
+    <div class="form-group">
+
+      <label>Benutzername</label>
+
+      <input
+        type="text"
+        id="authUsername"
+        placeholder="Benutzername"
+        autocomplete="username"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label>Passwort</label>
+
+      <input
+        type="password"
+        id="authPassword"
+        placeholder="Passwort"
+        autocomplete="current-password"
+      >
+
+    </div>
+
+    <button
+      class="auth-main-button"
+      id="authButton"
+      onclick="submitAuth()"
+    >
+      Anmelden
+    </button>
+
+    <button class="auth-back-button" onclick="backToStart()">
+      ← Zurück
+    </button>
+
+    <div id="authError" class="auth-error"></div>
+
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      Lagerverwaltung
+    </div>
+
+    <nav class="nav">
+
+      <button class="active" onclick="showPage('categories', this)">
+        📦 Kategorien
+      </button>
+
+      <button onclick="showPage('inventory', this)">
+        📊 Lagerbestand
+      </button>
+
+      <button id="incomingNav" onclick="showPage('incoming', this)">
+        ➕ Einlagerung
+      </button>
+
+      <button id="outgoingNav" onclick="showPage('outgoing', this)">
+        ➖ Entnehmen
+      </button>
+
+      <button id="logNav" onclick="showPage('log', this)">
+        📋 Protokoll
+      </button>
+
+      <button id="settingsNav" onclick="showPage('settings', this)">
+        ⚙️ Einstellungen
+      </button>
+
+    </nav>
+
+  </aside>
+
+  <main class="main" id="mainContent"></main>
+
+</div>
+
+<script>
+
+const ROLLEN_PASSWOERTER = {
+
+  "Administration": "SNK-A.1",
+  "Lagerist +": "SNK-L+.2",
+  "Lagerist": "SNK-L.3",
+  "Farmer": "SNK-Farmer.4"
+
+};
+
+let users =
+  JSON.parse(localStorage.getItem("lagerUsers")) || [];
+
+let currentUser = null;
+
+let isGuest = false;
+
+let authMode = "login";
+
+let lastAction = null;
+
+let inventory =
+  JSON.parse(localStorage.getItem("lagerInventory")) || [
+
+    {
+      name: "Weizen",
+      category: "Natur",
+      amount: 4500,
+      place: "",
+      lastSorter: "Max"
+    },
+
+    {
+      name: "Kartoffeln",
+      category: "Natur",
+      amount: 1200,
+      place: "",
+      lastSorter: "Anna"
+    },
+
+    {
+      name: "Mais",
+      category: "Natur",
+      amount: 280,
+      place: "",
+      lastSorter: "Tom"
+    }
+
+  ];
+
+function saveData() {
+
+  localStorage.setItem(
+    "lagerUsers",
+    JSON.stringify(users)
+  );
+
+  localStorage.setItem(
+    "lagerInventory",
+    JSON.stringify(inventory)
+  );
+
+}
+
+function showAuth(mode) {
+
+  authMode = mode;
+
+  document
+    .getElementById("startScreen")
+    .classList.add("hidden");
+
+  document
+    .getElementById("authScreen")
+    .classList.remove("hidden");
+
+  document.getElementById("authUsername").value = "";
+  document.getElementById("authPassword").value = "";
+
+  document.getElementById("authError").style.display = "none";
+
+  if (mode === "login") {
+
+    document.getElementById("authTitle").textContent =
+      "🔐 Anmelden";
+
+    document.getElementById("authDescription").textContent =
+      "Gib deinen Benutzernamen und dein Passwort ein.";
+
+    document.getElementById("authButton").textContent =
+      "Anmelden";
+
+  } else {
+
+    document.getElementById("authTitle").textContent =
+      "📝 Registrieren";
+
+    document.getElementById("authDescription").textContent =
+      "Wähle deinen Benutzernamen und gib das passende Rollen-Passwort ein.";
+
+    document.getElementById("authButton").textContent =
+      "Registrieren";
+
+  }
+
+}
+
+function showAuthError(message) {
+
+  const error =
+    document.getElementById("authError");
+
+  error.textContent = message;
+  error.style.display = "block";
+
+}
+
+function backToStart() {
+
+  document
+    .getElementById("authScreen")
+    .classList.add("hidden");
+
+  document
+    .getElementById("startScreen")
+    .classList.remove("hidden");
+
+}
+
+function submitAuth() {
+
+  const username =
+    document.getElementById("authUsername").value.trim();
+
+  const password =
+    document.getElementById("authPassword").value;
+
+  if (!username || !password) {
+
+    showAuthError(
+      "Bitte Benutzername und Passwort eingeben."
+    );
+
+    return;
+
+  }
+
+  if (authMode === "register") {
+
+    registerUser(username, password);
+
+  } else {
+
+    loginUser(username, password);
+
+  }
+
+}
+
+function getRoleFromPassword(password) {
+
+  for (const role in ROLLEN_PASSWOERTER) {
+
+    if (ROLLEN_PASSWOERTER[role] === password) {
+      return role;
+    }
+
+  }
+
+  return null;
+
+}
+
+function registerUser(username, password) {
+
+  const role =
+    getRoleFromPassword(password);
+
+  if (!role) {
+
+    showAuthError(
+      "Das Passwort ist nicht gültig."
+    );
+
+    return;
+
+  }
+
+  const existing =
+    users.find(
+      user =>
+        user.username.toLowerCase() ===
+        username.toLowerCase()
+    );
+
+  if (existing) {
+
+    showAuthError(
+      "Dieser Benutzername ist bereits vergeben."
+    );
+
+    return;
+
+  }
+
+  const newUser = {
+
+    username: username,
+    password: password,
+    role: role,
+    createdAt: new Date().toISOString()
+
+  };
+
+  users.push(newUser);
+
+  saveData();
+
+  currentUser = newUser;
+
+  isGuest = false;
+
+  saveCurrentUser();
+
+  openApp();
+
+}
+
+function loginUser(username, password) {
+
+  const user =
+    users.find(
+      item =>
+        item.username.toLowerCase() ===
+        username.toLowerCase()
+    );
+
+  if (!user) {
+
+    showAuthError(
+      "Benutzername wurde nicht gefunden."
+    );
+
+    return;
+
+  }
+
+  if (user.password !== password) {
+
+    showAuthError(
+      "Das Passwort ist falsch."
+    );
+
+    return;
+
+  }
+
+  const role =
+    getRoleFromPassword(password);
+
+  if (!role) {
+
+    showAuthError(
+      "Das Passwort gehört zu keiner gültigen Rolle."
+    );
+
+    return;
+
+  }
+
+  user.role = role;
+
+  currentUser = user;
+
+  isGuest = false;
+
+  saveData();
+
+  saveCurrentUser();
+
+  openApp();
+
+}
+
+function saveCurrentUser() {
+
+  if (!currentUser) return;
+
+  localStorage.setItem(
+    "lagerCurrentUser",
+    JSON.stringify({
+      username: currentUser.username
+    })
+  );
+
+}
+
+function restoreCurrentUser() {
+
+  const saved =
+    JSON.parse(
+      localStorage.getItem("lagerCurrentUser")
+    );
+
+  if (!saved) {
+    return false;
+  }
+
+  const user =
+    users.find(
+      item =>
+        item.username.toLowerCase() ===
+        saved.username.toLowerCase()
+    );
+
+  if (!user) {
+
+    localStorage.removeItem(
+      "lagerCurrentUser"
+    );
+
+    return false;
+
+  }
+
+  currentUser = user;
+  isGuest = false;
+
+  openApp();
+
+  return true;
+
+}
+
+function watchAsGuest() {
+
+  currentUser = {
+
+    username: "Zuschauer",
+    role: "Zuschauer"
+
+  };
+
+  isGuest = true;
+
+  openApp();
+
+}
+
+function openApp() {
+
+  document
+    .getElementById("startScreen")
+    .classList.add("hidden");
+
+  document
+    .getElementById("authScreen")
+    .classList.add("hidden");
+
+  document
+    .getElementById("app")
+    .classList.remove("hidden");
+
+  updateNavigation();
+
+  showPage("categories");
+
+}
+
+function updateNavigation() {
+
+  document.getElementById("incomingNav").style.display =
+    hasPermission("incoming") ? "" : "none";
+
+  document.getElementById("outgoingNav").style.display =
+    hasPermission("outgoing") ? "" : "none";
+
+  document.getElementById("logNav").style.display =
+    hasPermission("log") ? "" : "none";
+
+  document.getElementById("settingsNav").style.display =
+    currentUser &&
+    currentUser.role === "Administration"
+      ? ""
+      : "none";
+
+}
+
+function hasPermission(permission) {
+
+  if (!currentUser || isGuest) {
+    return false;
+  }
+
+  if (currentUser.role === "Administration") {
+    return true;
+  }
+
+  const permissions = {
+
+    "Lagerist +": [
+      "view",
+      "incoming",
+      "outgoing",
+      "log"
+    ],
+
+    "Lagerist": [
+      "view",
+      "incoming",
+      "outgoing"
+    ],
+
+    "Farmer": [
+      "view",
+      "incoming"
+    ]
+
+  };
+
+  return (
+    permissions[currentUser.role] || []
+  ).includes(permission);
+
+}
+
+function showPage(page, button) {
+
+  if (
+    page === "incoming" &&
+    !hasPermission("incoming")
+  ) {
+
+    alert("Du hast keine Berechtigung zum Einlagern.");
+    return;
+
+  }
+
+  if (
+    page === "outgoing" &&
+    !hasPermission("outgoing")
+  ) {
+
+    alert("Du hast keine Berechtigung zum Entnehmen.");
+    return;
+
+  }
+
+  if (
+    page === "log" &&
+    !hasPermission("log")
+  ) {
+
+    alert("Du hast keine Berechtigung für das Protokoll.");
+    return;
+
+  }
+
+  if (
+    page === "settings" &&
+    (!currentUser ||
+      currentUser.role !== "Administration")
+  ) {
+
+    alert(
+      "Nur die Administration kann Einstellungen öffnen."
+    );
+
+    return;
+
+  }
+
+  document
+    .querySelectorAll(".nav button")
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
+
+  if (button) {
+    button.classList.add("active");
+  }
+
+  if (page === "categories") {
+    renderCategories();
+  }
+
+  else if (page === "inventory") {
+    renderInventory();
+  }
+
+  else if (page === "incoming") {
+    renderIncoming();
+  }
+
+  else if (page === "outgoing") {
+    renderOutgoing();
+  }
+
+  else if (page === "log") {
+    renderLog();
+  }
+
+  else if (page === "settings") {
+    renderSettings();
+  }
+
+}
+
+function userDisplay() {
+
+  if (isGuest) {
+
+    return `
+      <div class="user">
+        👀 Zuschauer
+      </div>
+    `;
+
+  }
+
+  return `
+    <div class="user" onclick="renderProfile()">
+      👤 ${escapeHTML(currentUser.username)}
+    </div>
+  `;
+
+}
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+function renderCategories() {
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <div class="topbar">
+
+      <h1>Kategorien</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <div class="search-box">
+
+      <input
+        type="text"
+        id="categorySearch"
+        placeholder="🔎 Kategorie suchen..."
+        oninput="filterCategories()"
+      >
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+        <h2>📦 Kategorien</h2>
+      </div>
+
+      <div class="category-list" id="categoryList">
+
+        ${categoryButton("🌳", "Holz", "Holzartikel")}
+        ${categoryButton("🪨", "Stein", "Steinartikel")}
+        ${categoryButton("💎", "Erze", "Erzartikel")}
+        ${categoryButton("🌿", "Natur", "Naturartikel")}
+        ${categoryButton("🪟", "Glas", "Glasartikel")}
+
+      </div>
+
+    </section>
+  `;
+
+}
+
+function categoryButton(icon, name, description) {
+
+  return `
+
+    <button
+      class="category"
+      data-category="${name.toLowerCase()}"
+      onclick="openCategory('${name}')"
+    >
+
+      <div>
+
+        <strong>
+          ${icon} ${name}
+        </strong>
+
+        <p>
+          ${description}
+        </p>
+
+      </div>
+
+      <span>›</span>
+
+    </button>
+
+  `;
+
+}
+
+function filterCategories() {
+
+  const search =
+    document
+      .getElementById("categorySearch")
+      .value
+      .toLowerCase();
+
+  document
+    .querySelectorAll(".category")
+    .forEach(category => {
+
+      category.style.display =
+        category.dataset.category.includes(search)
+          ? "flex"
+          : "none";
+
+    });
+
+}
+
+function openCategory(category) {
+
+  const items =
+    inventory.filter(
+      item => item.category === category
+    );
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <button class="back-button"
+      onclick="renderCategories()">
+      ← Zurück
+    </button>
+
+    <div class="topbar">
+
+      <h1>${escapeHTML(category)}</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>
+          ${escapeHTML(category)} – Items
+        </h2>
+
+      </div>
+
+      ${
+        items.length === 0
+
+        ?
+
+        `
+          <div class="info-box">
+            Keine Items in dieser Kategorie.
+          </div>
+        `
+
+        :
+
+        `
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Item</th>
+                <th>Menge</th>
+                <th>Letzter Einsortierer</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              ${
+                items.map(item => `
+
+                  <tr>
+
+                    <td>
+
+                      <button
+                        class="small-button"
+                        onclick="openItem('${escapeHTML(item.name)}')"
+                      >
+                        ${escapeHTML(item.name)}
+                      </button>
+
+                    </td>
+
+                    <td>
+                      ${item.amount}
+                    </td>
+
+                    <td>
+                      ${escapeHTML(item.lastSorter)}
+                    </td>
+
+                  </tr>
+
+                `).join("")
+              }
+
+            </tbody>
+
+          </table>
+
+        `
+      }
+
+    </section>
+  `;
+
+}
+
+function openItem(name) {
+
+  const item =
+    inventory.find(i => i.name === name);
+
+  if (!item) return;
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <button
+      class="back-button"
+      onclick="openCategory('${escapeHTML(item.category)}')"
+    >
+      ← Zurück
+    </button>
+
+    <div class="topbar">
+
+      <h1>
+        ${escapeHTML(item.name)}
+      </h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>
+          📦 Iteminformationen
+        </h2>
+
+      </div>
+
+      <div class="info-box">
+
+        <strong>Item</strong>
+
+        ${escapeHTML(item.name)}
+
+      </div>
+
+      <div class="info-box">
+
+        <strong>Kategorie</strong>
+
+        ${escapeHTML(item.category)}
+
+      </div>
+
+      <div class="info-box">
+
+        <strong>Menge</strong>
+
+        ${item.amount}
+
+      </div>
+
+      <div class="info-box">
+
+        <strong>Letzter Einsortierer</strong>
+
+        ${escapeHTML(item.lastSorter)}
+
+      </div>
+
+    </section>
+  `;
+
+}
+
+function renderInventory() {
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <div class="topbar">
+
+      <h1>Lagerbestand</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <div class="search-box">
+
+      <input
+        type="text"
+        id="inventorySearch"
+        placeholder="🔎 Item suchen..."
+        oninput="filterInventory()"
+      >
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>📊 Lagerbestand</h2>
+
+      </div>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Item</th>
+            <th>Kategorie</th>
+            <th>Menge</th>
+            <th>Letzter Einsortierer</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="inventoryTable">
+
+          ${
+            inventory
+              .map(item => inventoryRow(item))
+              .join("")
+          }
+
+        </tbody>
+
+      </table>
+
+    </section>
+  `;
+
+}
+
+function inventoryRow(item) {
+
+  return `
+
+    <tr>
+
+      <td>
+
+        <button
+          class="small-button"
+          onclick="openItem('${escapeHTML(item.name)}')"
+        >
+          ${escapeHTML(item.name)}
+        </button>
+
+      </td>
+
+      <td>
+        ${escapeHTML(item.category)}
+      </td>
+
+      <td>
+        ${item.amount}
+      </td>
+
+      <td>
+        ${escapeHTML(item.lastSorter)}
+      </td>
+
+    </tr>
+
+  `;
+
+}
+
+function filterInventory() {
+
+  const search =
+    document
+      .getElementById("inventorySearch")
+      .value
+      .toLowerCase();
+
+  document
+    .querySelectorAll("#inventoryTable tr")
+    .forEach(row => {
+
+      row.style.display =
+        row.textContent.toLowerCase().includes(search)
+          ? ""
+          : "none";
+
+    });
+
+}
+
+
+/* ==================================================
+   EINLAGERUNG
+   NUR ITEM + MENGE
+================================================== */
+
+function renderIncoming() {
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <div class="topbar">
+
+      <h1>Einlagerung</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>
+          ➕ Item einlagern
+        </h2>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Item
+        </label>
+
+        <input
+          type="text"
+          id="incomingItem"
+          placeholder="Itemname"
+        >
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Menge
+        </label>
+
+        <input
+          type="number"
+          id="incomingAmount"
+          min="1"
+          placeholder="Menge"
+        >
+
+      </div>
+
+      <button
+        class="action-button"
+        onclick="doIncoming()"
+      >
+        Einlagern
+      </button>
+
+    </section>
+  `;
+
+}
+
+function doIncoming() {
+
+  if (!hasPermission("incoming")) {
+
+    alert("Keine Berechtigung.");
+    return;
+
+  }
+
+  const name =
+    document
+      .getElementById("incomingItem")
+      .value
+      .trim();
+
+  const amount =
+    Number(
+      document
+        .getElementById("incomingAmount")
+        .value
+    );
+
+  if (!name) {
+
+    alert(
+      "Bitte ein Item eingeben."
+    );
+
+    return;
+
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+
+    alert(
+      "Bitte eine gültige Menge eingeben."
+    );
+
+    return;
+
+  }
+
+  const oldItem =
+    inventory.find(
+      item =>
+        item.name.toLowerCase() ===
+        name.toLowerCase()
+    );
+
+  if (oldItem) {
+
+    lastAction = {
+
+      type: "add",
+
+      item: oldItem,
+
+      oldAmount: oldItem.amount,
+      oldSorter: oldItem.lastSorter
+
+    };
+
+    oldItem.amount += amount;
+
+    oldItem.lastSorter =
+      currentUser.username;
+
+  } else {
+
+    const newItem = {
+
+      name: name,
+
+      category: "Natur",
+
+      amount: amount,
+
+      place: "",
+
+      lastSorter:
+        currentUser.username
+
+    };
+
+    inventory.push(newItem);
+
+    lastAction = {
+
+      type: "new",
+
+      item: newItem
+
+    };
+
+  }
+
+  saveData();
+
+  alert(
+    "Item wurde erfolgreich eingelagert."
+  );
+
+  renderIncoming();
+
+  showUndoButton();
+
+}
+
+function renderOutgoing() {
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <div class="topbar">
+
+      <h1>Entnehmen</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>
+          ➖ Item entnehmen
+        </h2>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Item
+        </label>
+
+        <input
+          type="text"
+          id="outgoingItem"
+          placeholder="Itemname"
+        >
+
+      </div>
+
+      <div class="form-group">
+
+        <label>
+          Menge
+        </label>
+
+        <input
+          type="number"
+          id="outgoingAmount"
+          min="1"
+          placeholder="Menge"
+        >
+
+      </div>
+
+      <button
+        class="action-button"
+        onclick="doOutgoing()"
+      >
+        Entnehmen
+      </button>
+
+    </section>
+  `;
+
+}
+
+function doOutgoing() {
+
+  if (!hasPermission("outgoing")) {
+
+    alert("Keine Berechtigung.");
+    return;
+
+  }
+
+  const name =
+    document
+      .getElementById("outgoingItem")
+      .value
+      .trim();
+
+  const amount =
+    Number(
+      document
+        .getElementById("outgoingAmount")
+        .value
+    );
+
+  const item =
+    inventory.find(
+      i =>
+        i.name.toLowerCase() ===
+        name.toLowerCase()
+    );
+
+  if (!item) {
+
+    alert(
+      "Item wurde nicht gefunden."
+    );
+
+    return;
+
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+
+    alert(
+      "Bitte eine gültige Menge eingeben."
+    );
+
+    return;
+
+  }
+
+  if (amount > item.amount) {
+
+    alert(
+      "Nicht genügend Bestand."
+    );
+
+    return;
+
+  }
+
+  lastAction = {
+
+    type: "remove",
+
+    item: item,
+
+    oldAmount: item.amount
+
+  };
+
+  item.amount -= amount;
+
+  saveData();
+
+  alert(
+    "Entnahme erfolgreich."
+  );
+
+  renderOutgoing();
+
+  showUndoButton();
+
+}
+
+function showUndoButton() {
+
+  const old =
+    document.getElementById("undoButton");
+
+  if (old) old.remove();
+
+  const button =
+    document.createElement("button");
+
+  button.id = "undoButton";
+
+  button.className = "back-button";
+
+  button.style.position = "fixed";
+  button.style.bottom = "25px";
+  button.style.right = "25px";
+
+  button.innerHTML =
+    "↩ Rückgängig (20s)";
+
+  button.onclick = undoAction;
+
+  document.body.appendChild(button);
+
+  setTimeout(() => {
+
+    button.remove();
+    lastAction = null;
+
+  }, 20000);
+
+}
+
+function undoAction() {
+
+  if (!lastAction) {
+
+    alert(
+      "Die 20 Sekunden sind abgelaufen."
+    );
+
+    return;
+
+  }
+
+  if (lastAction.type === "add") {
+
+    lastAction.item.amount =
+      lastAction.oldAmount;
+
+    lastAction.item.lastSorter =
+      lastAction.oldSorter;
+
+  }
+
+  else if (lastAction.type === "new") {
+
+    inventory =
+      inventory.filter(
+        item =>
+          item !== lastAction.item
+      );
+
+  }
+
+  else if (lastAction.type === "remove") {
+
+    lastAction.item.amount =
+      lastAction.oldAmount;
+
+  }
+
+  saveData();
+
+  lastAction = null;
+
+  const button =
+    document.getElementById("undoButton");
+
+  if (button) {
+    button.remove();
+  }
+
+  alert(
+    "Aktion wurde rückgängig gemacht."
+  );
+
+}
+
+function renderLog() {
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <div class="topbar">
+
+      <h1>Protokoll</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>📋 Aktivitäten</h2>
+
+      </div>
+
+      <div class="info-box">
+        Das Protokoll wird später erweitert.
+      </div>
+
+    </section>
+  `;
+
+}
+
+function renderSettings() {
+
+  if (
+    !currentUser ||
+    currentUser.role !== "Administration"
+  ) {
+
+    alert(
+      "Nur die Administration kann Einstellungen öffnen."
+    );
+
+    return;
+
+  }
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <div class="topbar">
+
+      <h1>Einstellungen</h1>
+
+      ${userDisplay()}
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>👥 Benutzer</h2>
+
+      </div>
+
+      ${
+        users.length === 0
+
+        ?
+
+        `
+          <div class="info-box">
+            Noch keine Benutzer vorhanden.
+          </div>
+        `
+
+        :
+
+        users.map(
+          (user, index) => `
+
+            <div class="user-row">
+
+              <div>
+
+                <strong>
+                  ${escapeHTML(user.username)}
+                </strong>
+
+                <br>
+
+                <span class="role-badge">
+                  ${escapeHTML(user.role)}
+                </span>
+
+              </div>
+
+              <div>
+
+                <select
+                  onchange="changeRole(
+                    ${index},
+                    this.value
+                  )"
+                >
+
+                  <option value="Administration"
+                    ${user.role === "Administration" ? "selected" : ""}>
+                    Administration
+                  </option>
+
+                  <option value="Lagerist +"
+                    ${user.role === "Lagerist +" ? "selected" : ""}>
+                    Lagerist +
+                  </option>
+
+                  <option value="Lagerist"
+                    ${user.role === "Lagerist" ? "selected" : ""}>
+                    Lagerist
+                  </option>
+
+                  <option value="Farmer"
+                    ${user.role === "Farmer" ? "selected" : ""}>
+                    Farmer
+                  </option>
+
+                </select>
+
+                ${
+                  user.username === currentUser.username
+                  ? ""
+                  : `
+                    <button
+                      class="delete-button"
+                      onclick="deleteUser(${index})"
+                    >
+                      🗑️ Entfernen
+                    </button>
+                  `
+                }
+
+              </div>
+
+            </div>
+
+          `
+        ).join("")
+      }
+
+      <button
+        class="action-button logout-button"
+        onclick="logout()"
+      >
+        Abmelden
+      </button>
+
+    </section>
+  `;
+
+}
+
+function changeRole(index, role) {
+
+  if (
+    !currentUser ||
+    currentUser.role !== "Administration"
+  ) {
+
+    alert(
+      "Nur die Administration darf Rollen ändern."
+    );
+
+    return;
+
+  }
+
+  if (!users[index]) return;
+
+  if (
+    users[index].username === currentUser.username &&
+    role !== "Administration"
+  ) {
+
+    alert(
+      "Du kannst dir selbst nicht die Administration entziehen."
+    );
+
+    renderSettings();
+
+    return;
+
+  }
+
+  users[index].role = role;
+
+  saveData();
+
+  renderSettings();
+
+}
+
+function deleteUser(index) {
+
+  if (
+    !currentUser ||
+    currentUser.role !== "Administration"
+  ) {
+
+    alert(
+      "Nur die Administration darf Benutzer entfernen."
+    );
+
+    return;
+
+  }
+
+  const user = users[index];
+
+  if (!user) return;
+
+  if (
+    user.username === currentUser.username
+  ) {
+
+    alert(
+      "Du kannst deinen eigenen Account hier nicht löschen."
+    );
+
+    return;
+
+  }
+
+  if (
+    !confirm(
+      `Soll der Benutzer "${user.username}" wirklich gelöscht werden?`
+    )
+  ) {
+    return;
+  }
+
+  users.splice(index, 1);
+
+  saveData();
+
+  renderSettings();
+
+}
+
+function renderProfile() {
+
+  if (isGuest) return;
+
+  document.getElementById("mainContent").innerHTML = `
+
+    <button
+      class="back-button"
+      onclick="renderCategories()"
+    >
+      ← Zurück
+    </button>
+
+    <div class="topbar">
+
+      <h1>Profil</h1>
+
+    </div>
+
+    <section class="panel">
+
+      <div class="panel-header">
+
+        <h2>👤 Mein Profil</h2>
+
+      </div>
+
+      <div class="info-box">
+
+        <strong>Benutzername</strong>
+
+        ${escapeHTML(currentUser.username)}
+
+      </div>
+
+      <div class="info-box">
+
+        <strong>Rolle</strong>
+
+        ${escapeHTML(currentUser.role)}
+
+      </div>
+
+      <button
+        class="action-button logout-button"
+        onclick="logout()"
+      >
+        Abmelden
+      </button>
+
+    </section>
+  `;
+
+}
+
+function logout() {
+
+  localStorage.removeItem(
+    "lagerCurrentUser"
+  );
+
+  currentUser = null;
+  isGuest = false;
+
+  document
+    .getElementById("app")
+    .classList.add("hidden");
+
+  document
+    .getElementById("authScreen")
+    .classList.add("hidden");
+
+  document
+    .getElementById("startScreen")
+    .classList.remove("hidden");
+
+}
+
+
+/* ==================================================
+   BEIM F5 ANGEMELDET BLEIBEN
+================================================== */
+
+if (!restoreCurrentUser()) {
+
+  document
+    .getElementById("startScreen")
+    .classList.remove("hidden");
+
+}
+
+</script>
+
+</body>
+</html>
